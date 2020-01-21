@@ -2,9 +2,7 @@
 # to type in a lengthy string such as wpilib.drive.DifferentialDrive.
 import wpilib
 from wpilib.drive import DifferentialDrive
-import robotpy_ext.autonomous
 # ctre lets you use the can bus on the RoboRio.
-import ctre
 
 
 class MyRobot(wpilib.TimedRobot):
@@ -43,29 +41,16 @@ class MyRobot(wpilib.TimedRobot):
         # Defines the Joystick that we will be using for driving.
         self.DriveStick = wpilib.Joystick(self.DriveStickChannel)
 
-    def autonomous(self):
-
-        self.drive.setSafetyEnabled(True)
-
-        while self.isAutonomous() and self.isEnabled():
-
-            robotpy_ext.autonomous.AutonomousModeSelector("Game_Left")
-
-
-
-
-
     def operatorControl(self):
 
         # Enables the safety on the drive. Very important. DO NOT FORGET!
         self.drive.setSafetyEnabled(True)
-
         # Checks to see if the robot is activated and that operator control is active, so your robot does not move
         # when it is not supposed to.
         while self.isOperatorControl() and self.isEnabled():
 
-            # drives the robot with the arcade drive, which uses one joystick and is a bit easier to use.
-            # It is a part of DifferentialDrive
+            # drives the robot with the arcade drive, which uses one joystick and is a bit easier to use. It is a
+            # part of DifferentialDrive
             self.drive.arcadeDrive(
                 self.DriveStick.getY(),
                 self.DriveStick.getX(),

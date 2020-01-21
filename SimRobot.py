@@ -1,75 +1,71 @@
-# Imports the packages so they can be used to run the robot. You can import a package from a package to avoid having
-# to type in a lengthy string such as wpilib.drive.DifferentialDrive.
+"""
+    This is the 2020 simulator code for the FRC team 5613 Thunderdogs. It shows an example of how the robot works.
+    We used the robotpy_ext autonomous for multiple autonomous modes to use at the competition.
+    We are using the TimedRobot class which inherits from the IterativeRobot base. That means that we can use the
+    autonomous selector like it would normally be used on the IterativeRobot class.
+"""
+from robotpy_ext import autonomous
+from wpilib import TimedRobot, Spark, Joystick, SpeedControllerGroup
 import wpilib
-from wpilib.drive import DifferentialDrive
-import robotpy_ext.autonomous
-# ctre lets you use the can bus on the RoboRio.
-import ctre
 
 
-class MyRobot(wpilib.SampleRobot):
+class MyRobot(TimedRobot):
+    # Defines the channels that are used on the inputs. In the simulator, they have to match up with the physics.py file
+    # This is really useful when you have a variable used hundreds of times and you want to have it set so you can
+    # change it all in one go.
 
-    # Defines the channels on the RoboRio that the motors are plugged into. There can be up to eight.
-    FLChannel = 3
-    FRChannel = 4
-    RLChannel = 1
-    RRChannel = 2
+    RLMotorChannel = 2
+    RRMotorChannel = 4
+    FLMotorChannel = 1
+    FRMotorChannel = 3
 
-    # Defines the order that the sticks that are plugged in are assigned.
     DriveStickChannel = 0
-    # ExtraStickChannel = 1
 
     def robotInit(self):
+        # Initializing the motors and putting them into groups for the drive function.
+        RLMotor = Spark(self.RLMotorChannel)
+        RRMotor = Spark(self.RRMotorChannel)
+        FLMotor = Spark(self.FLMotorChannel)
+        FRMotor = Spark(self.FRMotorChannel)
 
-        # Launches the camera server so that we can have video through any cameras on the robot.
-        wpilib.CameraServer.launch()
+        self.Left = SpeedControllerGroup(RLMotor, FLMotor)
+        self.Right = SpeedControllerGroup(RRMotor, FRMotor)
 
-        # Defines the motors that will actually be on the robot for use in the drive function.
-        self.FLMotor = wpilib.Spark(self.FLChannel)
-        self.FRMotor = wpilib.Spark(self.FRChannel)
-        self.RLMotor = wpilib.Spark(self.RLChannel)
-        self.RRMotor = wpilib.Spark(self.RRChannel)
+        # Initializing the Joystick to drive the robot.
+        self.DriveStick = Joystick(self.DriveStickChannel)
 
-        # Puts the motors into groups so that they fit the parameters of the function.
-        self.LMG = wpilib.SpeedControllerGroup(self.FLMotor, self.RLMotor)
-        self.RMG = wpilib.SpeedControllerGroup(self.FRMotor, self.RRMotor)
+        # Initializing the drive function for use in the simulator. This is the same as our normal robot.
+        self.drive = wpilib.drive.DifferentialDrive(self.Left, self.Right)
 
-        # The drive function that tells the computer what kind of drive to use and where the motors are.
-        self.drive = DifferentialDrive(self.LMG, self.RMG)
+        # Sets the right side motors to be inverted so the simulated robot can drive strait.
+        self.drive.setRightSideInverted(rightSideInverted=True)
 
-        # Tells the computer how long to wait without input to turn off the motors
+        # Turns the drive off after .1 seconds of inactivity.
         self.drive.setExpiration(0.1)
 
-        # Defines the Joystick that we will be using for driving.
-        self.DriveStick = wpilib.Joystick(self.DriveStickChannel)
-
+        # Components is a dictionary that contains any variables you want to put into it. All of the variables put into
+        # components dictionary is given to the autonomous modes
         self.components = {"drive": self.drive}
 
-        self.automodes = robotpy_ext.autonomous.AutonomousModeSelector("autonomous", self.components)
+        # Sets up the autonomous mode selector by telling it where the autonomous modes are at and what the autonomous
+        # modes should inherit
+        self.automodes = autonomous.AutonomousModeSelector("Sim_Autonomous", self.components)
 
-    def autonomous(self):
+    def autonomousPeriodic(self):
+        # runs the autonomous modes when Autonomous is activated.
         self.automodes.run()
 
-    def operatorControl(self):
+    def teleopPeriodic(self):
 
-        # Enables the safety on the drive. Very important. DO NOT FORGET!
+        # Turns on drive safety
         self.drive.setSafetyEnabled(True)
-
-        # Checks to see if the robot is activated and that operator control is active, so your robot does not move
-        # when it is not supposed to.
-        while self.isOperatorControl() and self.isEnabled():
-
-            # drives the robot with the arcade drive, which uses one joystick and is a bit easier to use.
-            # It is a part of DifferentialDrive
+        if self.isOperatorControl() and self.isEnabled():
             self.drive.arcadeDrive(
                 self.DriveStick.getY(),
                 -self.DriveStick.getX(),
                 squareInputs=False
             )
-        wpilib.Timer.delay(0.005)
-        # Keeps the robot from constantly bombarding your computer for inputs, saving some CPU time for changing
-        # control modes or turning off the robot
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     wpilib.run(MyRobot)
