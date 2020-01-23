@@ -1,28 +1,37 @@
-# Imports the packages so they can be used to run the robot. You can import a package from a package to avoid having
-# to type in a lengthy string such as wpilib.drive.DifferentialDrive.
+"""
+    This is the 2020 drive code for the FRC team 5613 Thunderdogs.
+    We used the robotpy_ext autonomous for multiple autonomous modes. Note how the directory we get the Autonomous
+    modes from is different than the one used in the the SimRobot.py file.
+    We are using the TimedRobot class which inherits from the IterativeRobot base. That means that we can use the
+    autonomous selector like it would normally be used on the IterativeRobot class.
+    If there are issues check the autonomous directory and make sure there is an __init__.py file. Not having one causes
+    issues because it is meant to be a package and you have to have it as a placeholder, even if there is nothing in it.
+"""
 import wpilib
 from wpilib.drive import DifferentialDrive
-# ctre lets you use the can bus on the RoboRio.
+from robotpy_ext import autonomous
 
 
 class MyRobot(wpilib.TimedRobot):
+    # Defines the channels that are used on the inputs.This is really useful when you have a variable used hundreds
+    # of times and you want to have it set so you can change it all in one go.
 
-    # Defines the channels on the RoboRio that the motors are plugged into. There can be up to eight.
     FLChannel = 0
     FRChannel = 1
     RLChannel = 2
     RRChannel = 3
 
-    # Defines the order that the sticks that are plugged in are assigned.
     DriveStickChannel = 0
+
     # ExtraStickChannel = 1
 
+    # RobotInit is where everything is initialized.
     def robotInit(self):
 
         # Launches the camera server so that we can have video through any cameras on the robot.
         wpilib.CameraServer.launch()
 
-        # Defines the motors that will actually be on the robot for use in the drive function.
+        # Initializing drive motors
         self.FLMotor = wpilib.Spark(self.FLChannel)
         self.FRMotor = wpilib.Spark(self.FRChannel)
         self.RLMotor = wpilib.Spark(self.RLChannel)
@@ -41,14 +50,24 @@ class MyRobot(wpilib.TimedRobot):
         # Defines the Joystick that we will be using for driving.
         self.DriveStick = wpilib.Joystick(self.DriveStickChannel)
 
-    def operatorControl(self):
+        # Components is a dictionary that contains any variables you want to put into it. All of the variables put into
+        # components dictionary is given to the autonomous modes.
+        self.components = {"drive": self.drive}
 
+        # Sets up the autonomous mode selector by telling it where the autonomous modes are at and what the autonomous
+        # modes should inherit.
+        self.automodes = autonomous.AutonomousModeSelector("autonomous", self.components)
+
+    def autonmousPeriodic(self):
+        # Runs the autonomous mode selector.
+        self.automodes.run()
+
+    def teleopPeriodic(self):
         # Enables the safety on the drive. Very important. DO NOT FORGET!
         self.drive.setSafetyEnabled(True)
         # Checks to see if the robot is activated and that operator control is active, so your robot does not move
         # when it is not supposed to.
         while self.isOperatorControl() and self.isEnabled():
-
             # drives the robot with the arcade drive, which uses one joystick and is a bit easier to use. It is a
             # part of DifferentialDrive
             self.drive.arcadeDrive(
@@ -57,9 +76,7 @@ class MyRobot(wpilib.TimedRobot):
                 squareInputs=True
             )
 
-        # Keeps the robot from constantly bombarding your computer for inputs, saving some CPU time for changing
-        # control modes or turning off the robot
 
-
+# Runs the class MyRobot.
 if __name__ == '__main__':
     wpilib.run(MyRobot)
