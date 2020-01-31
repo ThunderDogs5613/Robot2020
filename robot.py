@@ -10,6 +10,8 @@
 import wpilib
 from wpilib.drive import DifferentialDrive
 from robotpy_ext import autonomous
+from networktables import NetworkTables
+import numpy
 
 
 class MyRobot(wpilib.TimedRobot):
@@ -28,8 +30,13 @@ class MyRobot(wpilib.TimedRobot):
     # RobotInit is where everything is initialized.
     def robotInit(self):
 
-        # Launches the camera server so that we can have video through any cameras on the robot.
-        wpilib.CameraServer.launch()
+        # Initializes the network table
+        NetworkTables.initialize(server="roborio-XXX-frc.local")
+        self.table = NetworkTables.getTable("limelight")
+        # f is a control constant that will be used to change variable values quickly
+        self.f = 1
+        self.ControlConstant = -0.1 * self.f
+        self.minCommand = -0.05 * self.f
 
         # Initializing drive motors
         self.FLMotor = wpilib.Spark(self.FLChannel)
@@ -68,6 +75,29 @@ class MyRobot(wpilib.TimedRobot):
         # Checks to see if the robot is activated and that operator control is active, so your robot does not move
         # when it is not supposed to.
         while self.isOperatorControl() and self.isEnabled():
+
+            if self.DriveStick.getrawButton(2):
+
+                tx = self.table.getNumber("tx")
+                ty = self.table.getNumber("ty")
+
+                targetAngle = 20 + ty
+                distance = 8 / numpy.tan(targetAngle)
+
+                headingError = tx
+                SteerAdjust = 0 * self.f
+
+                if tx > 1.0:
+                    SteerAdjust = self.ControlConstant * headingError + self.minCommand
+                elif tx < -1.0:
+                    SteerAdjust = self.ControlConstant * headingError - self.minCommand
+
+                self.drive.tankDrive(
+                    SteerAdjust,
+                    -SteerAdjust,
+                    squareInputs=False
+                )
+
             # drives the robot with the arcade drive, which uses one joystick and is a bit easier to use. It is a
             # part of DifferentialDrive
             self.drive.arcadeDrive(
