@@ -76,6 +76,7 @@ class MyRobot(wpilib.TimedRobot):
         # when it is not supposed to.
         while self.isOperatorControl() and self.isEnabled():
 
+            # Checks to see if you are holding button 2 and if so automatically aims the robot. Else, normal drive.
             if self.DriveStick.getrawButton(2):
 
                 # Tx and Ty are variables marking the angle to the target.
@@ -107,13 +108,14 @@ class MyRobot(wpilib.TimedRobot):
                     squareInputs=False
                 )
 
-            # drives the robot with the arcade drive, which uses one joystick and is a bit easier to use. It is a
-            # part of DifferentialDrive
-            self.drive.arcadeDrive(
-                self.DriveStick.getY(),
-                self.DriveStick.getX(),
-                squareInputs=True
-            )
+            else:
+                # drives the robot with the arcade drive, which uses one joystick and is a bit easier to use. It is a
+                # part of DifferentialDrive
+                self.drive.arcadeDrive(
+                    self.DriveStick.getY(),
+                    self.DriveStick.getX(),
+                    squareInputs=True
+                )
 
 
 # Runs the class MyRobot.
