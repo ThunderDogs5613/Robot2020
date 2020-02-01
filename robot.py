@@ -11,7 +11,7 @@ import wpilib
 from wpilib.drive import DifferentialDrive
 from robotpy_ext import autonomous
 from networktables import NetworkTables
-import numpy
+from numpy import tan
 
 
 class MyRobot(wpilib.TimedRobot):
@@ -78,20 +78,29 @@ class MyRobot(wpilib.TimedRobot):
 
             if self.DriveStick.getrawButton(2):
 
+                # Tx and Ty are variables marking the angle to the target.
+                # If they are 0 then the calibrated crosshair is right on the target.
                 tx = self.table.getNumber("tx")
                 ty = self.table.getNumber("ty")
 
+                # Angle to the target based off of the angle the camera is mounted at and the angle the camera measures.
                 targetAngle = 20 + ty
-                distance = 8 / numpy.tan(targetAngle)
+                # Distance from the target as calculated off of the equation
+                # (TargetHeight - CameraHeight) / Tan(MountAngle + TargetAngle) = D
+                # For a more in-depth explanation look a the limelight docs at docs.limelightvision.io
+                distance = 8 / tan(targetAngle)
 
+                # The error in your robot's heading based off of the angle to the target.
                 headingError = tx
-                SteerAdjust = 0 * self.f
+                SteerAdjust = 0
 
+                # Turns the robot if it is more than one degree off.
                 if tx > 1.0:
                     SteerAdjust = self.ControlConstant * headingError + self.minCommand
                 elif tx < -1.0:
                     SteerAdjust = self.ControlConstant * headingError - self.minCommand
 
+                # Uses the calculations to turn the robot.
                 self.drive.tankDrive(
                     SteerAdjust,
                     -SteerAdjust,
