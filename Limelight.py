@@ -30,15 +30,15 @@ if self.DriveStick.getRawButton(2):
     wpilib.run(estimateDistance)
     
     float.headingError = float.tx
-    self.steerAdjust = 0*f
+    float.steerAdjust = 0*f
 
     if float.tx > 1.0
-        self.steerAdjust = kp*float.headingError + minCommand
+        float.steerAdjust = kp*float.headingError + minCommand
     elif float.tx < -1.0
         self.steerAdjust = kp*float.headingError - minCommand
     
-    leftDrive = self.steerAdjust
-    rightDrive = -self.steerAdjust
+    leftDrive = float.steerAdjust
+    rightDrive = -float.steerAdjust
     
     self.drive.tankDrive(
     leftDrive,
