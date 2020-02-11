@@ -12,6 +12,7 @@ from wpilib.drive import DifferentialDrive
 from robotpy_ext import autonomous
 from networktables import NetworkTables
 from numpy import tan
+import rev
 
 
 class MyRobot(wpilib.TimedRobot):
@@ -37,6 +38,10 @@ class MyRobot(wpilib.TimedRobot):
         self.f = 1
         self.ControlConstant = -0.1 * self.f
         self.minCommand = -0.05 * self.f
+
+        self.Blue = wpilib._wpilib.Color.blue
+        self.Red = wpilib._wpilib.Color.red
+        self.Green = wpilib._wpilib.Color.green
 
         # Initializing drive motors
         self.FLMotor = wpilib.Spark(self.FLChannel)
@@ -64,6 +69,8 @@ class MyRobot(wpilib.TimedRobot):
         # Sets up the autonomous mode selector by telling it where the autonomous modes are at and what the autonomous
         # modes should inherit.
         self.automodes = autonomous.AutonomousModeSelector("autonomous", self.components)
+
+        self.ColorSensor = rev.color.ColorSensorV3(0)
 
     def autonmousPeriodic(self):
         # Runs the autonomous mode selector.
