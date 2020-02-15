@@ -6,6 +6,7 @@
     autonomous selector like it would normally be used on the IterativeRobot class.
     If there are issues check the Sim_Autonomous directory and make sure there is an __init__.py file.
 """
+import wpilib
 from robotpy_ext import autonomous
 from wpilib import TimedRobot, Spark, Joystick, SpeedControllerGroup, run
 from wpilib.drive import DifferentialDrive
@@ -17,9 +18,9 @@ class MyRobot(TimedRobot):
     # change it all in one go.
 
     RLMotorChannel = 2
-    RRMotorChannel = 4
-    FLMotorChannel = 1
-    FRMotorChannel = 3
+    RRMotorChannel = 0
+    FLMotorChannel = 3
+    FRMotorChannel = 4
 
     DriveStickChannel = 0
 
