@@ -9,23 +9,21 @@
 """
 import wpilib
 from wpilib.drive import DifferentialDrive
-from ctre import TalonSRX
 from robotpy_ext import autonomous
-
-
-# from networktables import NetworkTables
-# from numpy import tan
+from networktables import NetworkTables
+from numpy import tan
+import ctre
 # from rev.color import ColorSensorV3
 
 
-class MyRobot(wpilib.TimedRobot):
+class MyRobot(wpilib.IterativeRobot):
     # Defines the channels that are used on the inputs.This is really useful when you have a variable used hundreds
     # of times and you want to have it set so you can change it all in one go.
 
-    FLChannel = 0
-    FRChannel = 1
-    RLChannel = 2
-    RRChannel = 3
+    FLChannel = 4
+    FRChannel = 2
+    RLChannel = 3
+    RRChannel = 1
 
     DriveStickChannel = 0
 
@@ -46,11 +44,17 @@ class MyRobot(wpilib.TimedRobot):
         # self.Red = (RGB value of red color)
         # self.Yellow = (RGB value of Yellow color)
 
+        # Defines the Joystick that we will be using for driving.
+        self.DriveStick = wpilib.Joystick(self.DriveStickChannel)
+
         # Initializing drive motors
-        self.FLMotor = TalonSRX(self.FLChannel)
-        self.FRMotor = TalonSRX(self.FRChannel)
-        self.RLMotor = TalonSRX(self.RLChannel)
-        self.RRMotor = TalonSRX(self.RRChannel)
+        self.FLMotor = wpilib.Spark(self.FLChannel)
+        self.FRMotor = wpilib.Spark(self.FRChannel)
+
+        self.RLMotor = wpilib.Spark(self.RLChannel)
+        self.RRMotor = wpilib.Spark(self.RRChannel)
+
+        self.LoaderGrab = ctre.VictorSPX(1)
 
         # Puts the motors into groups so that they fit the parameters of the function.
         self.LMG = wpilib.SpeedControllerGroup(self.FLMotor, self.RLMotor)
@@ -59,34 +63,28 @@ class MyRobot(wpilib.TimedRobot):
         # The drive function that tells the computer what kind of drive to use and where the motors are.
         self.drive = DifferentialDrive(self.LMG, self.RMG)
 
-        # Tells the computer how long to wait without input to turn off the motors
-        self.drive.setExpiration(0.1)
-
-        # Defines the Joystick that we will be using for driving.
-        self.DriveStick = wpilib.Joystick(self.DriveStickChannel)
-
         # self.ColorSensor = ColorSensorV3(wpilib.I2C.Port.kOnboard)
 
         # Components is a dictionary that contains any variables you want to put into it. All of the variables put into
         # components dictionary is given to the autonomous modes.
-        self.components = {"drive": self.drive}
+        # self.components = {"drive": self.drive}
 
         # Sets up the autonomous mode selector by telling it where the autonomous modes are at and what the autonomous
         # modes should inherit.
-        self.automodes = autonomous.AutonomousModeSelector("autonomous", self.components)
+        # self.automodes = autonomous.AutonomousModeSelector("autonomous", self.components)
 
+        self.timer = wpilib.Timer()
 
-
-    def autonmousPeriodic(self):
+    # def autonomousPeriodic(self):
         # Runs the autonomous mode selector.
-        self.automodes.run()
+        # self.automodes.run()
 
-    def teleopPeriodic(self):
-        # Enables the safety on the drive. Very important. DO NOT FORGET!
+    def operatorControl(self):
+
         self.drive.setSafetyEnabled(True)
-        # Checks to see if the robot is activated and that operator control is active, so your robot does not move
-        # when it is not supposed to.
-        while self.isOperatorControl() and self.isEnabled():
+
+        while self.isOperatorControlEnabled():
+
             # Checks to see if you are holding button 2 and if so automatically aims the robot. Else, normal drive.
             # if self.DriveStick.getrawButton(2):
 
@@ -127,6 +125,8 @@ class MyRobot(wpilib.TimedRobot):
                 self.DriveStick.getX(),
                 squareInputs=True
             )
+
+        wpilib.Timer.delay(.005)
 
 
 # Runs the class MyRobot.
